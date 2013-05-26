@@ -10,8 +10,8 @@ def bacon
   require 'nokogiri'
   require 'open-uri'
 
-  @base_url = "http://www.imdb.com/"
-  @start_url = @base_url + "name/nm0000102/?ref_=sr_1"
+  @base_url = "http://www.imdb.com"
+  @start_url = @base_url + "/name/nm0000102/?ref_=sr_1"
   current_url =  @start_url
 
   # actor_nodes: actor name is key, value is an array of all movie_edges
@@ -32,13 +32,11 @@ def load_graph(current_url)
 
   actor_name = select_actor_name(actor_page)
 
-  puts "actor name is #{actor_name}"
-
   record_actor(actor_name, current_url) 
 
-  actors_movies = select_movies(actor_page)
+  #actors_movies = select_movies(actor_page)
 
-  puts "actor's movies #{actors_movies}"
+  record_movies(actor_name, actor_page)
 end
 
 def select_actor_name(page)
@@ -46,27 +44,42 @@ def select_actor_name(page)
 end
 
 def record_actor(actor_name, url)
-  if @actor_nodes.has_key?(actor_name)
-  else
-    @actor_nodes[actor_name] = []
-  end
-
   if @actor_urls.has_key?(actor_name)
   else
     @actor_urls[actor_name] = url 
   end
 end
 
-def select_movies(page)
-  movies = []
+# def select_movies(page)
+#   movies = []
 
-  @actor_page.css('.filmo-row b a text()').each do |movie|
-    movies.push(movie.text)
+#   page.css('.filmo-row b a text()').each do |movie|
+#     movies.push(movie.text)
+#   end
+
+#   movies
+# end
+
+def record_movies(current_actor, page)
+  page.css('.filmo-row b a').each do |url|
+    if @movie_edges.has_key?(url.text)
+      @movie_edges[url.text].push(current_actor)
+    else
+      @movie_edges[url.text] = [current_actor]
+    end
+
+    if @movie_urls.has_key?(url.text)
+    else
+      @movie_urls[url.text] = @base_url + url['href']
+    end
+
+    if @actor_nodes.has_key?(current_actor)
+      @actor_nodes[current_actor].push(url.text)
+    else
+      @actor_nodes[current_actor] = [url.text]
+    end
   end
-
-  movies
 end
-
 
 def time
   start = Time.now
