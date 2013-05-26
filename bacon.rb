@@ -34,8 +34,6 @@ def load_graph(current_url)
 
   record_actor(actor_name, current_url) 
 
-  #actors_movies = select_movies(actor_page)
-
   record_movies(actor_name, actor_page)
 end
 
@@ -50,33 +48,23 @@ def record_actor(actor_name, url)
   end
 end
 
-# def select_movies(page)
-#   movies = []
-
-#   page.css('.filmo-row b a text()').each do |movie|
-#     movies.push(movie.text)
-#   end
-
-#   movies
-# end
-
 def record_movies(current_actor, page)
-  page.css('.filmo-row b a').each do |url|
-    if @movie_edges.has_key?(url.text)
-      @movie_edges[url.text].push(current_actor)
+  page.css('.filmo-row b a').each do |movie|
+    if @movie_edges.has_key?(movie.text)
+      @movie_edges[movie.text].push(current_actor)
     else
-      @movie_edges[url.text] = [current_actor]
+      @movie_edges[movie.text] = [current_actor]
     end
 
-    if @movie_urls.has_key?(url.text)
+    if @movie_urls.has_key?(movie.text)
     else
-      @movie_urls[url.text] = @base_url + url['href']
+      @movie_urls[movie.text] = @base_url + movie['href']
     end
 
     if @actor_nodes.has_key?(current_actor)
-      @actor_nodes[current_actor].push(url.text)
+      @actor_nodes[current_actor].push(movie.text)
     else
-      @actor_nodes[current_actor] = [url.text]
+      @actor_nodes[current_actor] = [movie.text]
     end
   end
 end
